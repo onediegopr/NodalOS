@@ -22,11 +22,13 @@ public static class NodalOsTeachNodalProductHtmlRenderer
             ? "<div class=\"muted\">Todavía no hay drafts guardados.</div>"
             : string.Join(string.Empty, snapshot.SavedDrafts.Select(value =>
                 $"<article class=\"saved\"><strong>{H(value.Title)}</strong><span>{H(value.AppProfileId)} · v{value.Version} · {value.StepCount} pasos</span></article>"));
-        var main = snapshot.Proposal is not null
-            ? RenderProposal(snapshot.Proposal, token, snapshot.State)
-            : snapshot.Bound
-                ? RenderCapture(snapshot, token)
-                : RenderBind(token);
+        var main = snapshot.State == NodalOsTeachNodalProductState.FailedClosed
+            ? RenderFailedClosed(token)
+            : snapshot.Proposal is not null
+                ? RenderProposal(snapshot.Proposal, token, snapshot.State)
+                : snapshot.Bound
+                    ? RenderCapture(snapshot, token)
+                    : RenderBind(token);
 
         const string template = """
 <!doctype html>
@@ -40,7 +42,7 @@ public static class NodalOsTeachNodalProductHtmlRenderer
     *{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font:14px/1.5 Inter,Geist,Manrope,"Segoe UI",sans-serif}a{color:#AFC0FF;text-decoration:none}
     .shell{min-height:100vh;display:grid;grid-template-columns:220px minmax(0,1fr)}aside{border-right:1px solid var(--border);padding:24px 16px;background:#10151C;display:flex;flex-direction:column;gap:24px}.brand{font-weight:900;letter-spacing:.08em}.brand span{display:block;color:var(--muted);font-size:12px;font-weight:500;letter-spacing:0}.nav{display:grid;gap:6px}.nav a{padding:9px 11px;border:1px solid transparent;border-radius:9px;color:var(--muted)}.nav a.active{background:#1B2330;border-color:#35415A;color:var(--text)}.boundary{margin-top:auto;border:1px solid var(--border);border-radius:12px;background:var(--panel);padding:12px;color:var(--muted);font-size:12px}.boundary strong{color:var(--ok);display:block}
     main{padding:24px;max-width:1240px;width:100%;margin:0 auto}.hero,.card{border:1px solid var(--border);border-radius:16px;background:var(--panel)}.hero{padding:22px;display:flex;justify-content:space-between;gap:18px}.eyebrow{color:#91A9FF;text-transform:uppercase;letter-spacing:.13em;font-size:11px;font-weight:850}h1{margin:7px 0;font-size:34px;letter-spacing:-.04em}h2{margin:0;font-size:15px}.muted{color:var(--muted)}.badge{display:inline-flex;border:1px solid var(--border);border-radius:999px;padding:5px 9px;font-size:11px;height:max-content}.badge.ready{color:var(--ok);border-color:rgba(0,194,168,.45)}.badge.attention{color:var(--warn);border-color:rgba(240,180,90,.45)}.badge.blocked{color:var(--bad);border-color:rgba(240,106,106,.45)}
-    .grid{margin-top:18px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.7fr);gap:18px;align-items:start}.stack{display:grid;gap:18px}.card{padding:18px}.card-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding-bottom:13px;border-bottom:1px solid var(--border)}form{display:grid;gap:13px;margin-top:15px}fieldset{border:1px solid var(--border);border-radius:12px;padding:13px;display:grid;gap:11px}legend{color:#C8D4FF;font-weight:800;padding:0 7px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}label{display:grid;gap:6px;color:var(--muted);font-size:12px}label.full{grid-column:1/-1}input,select,textarea{width:100%;border:1px solid var(--border);border-radius:9px;background:#0F141A;color:var(--text);padding:9px 10px;font:inherit}textarea{min-height:84px;resize:vertical}.check{display:flex;align-items:center;gap:8px}.check input{width:auto}.actions{display:flex;flex-wrap:wrap;gap:9px}button{min-height:39px;border-radius:9px;padding:0 13px;font:inherit;font-weight:800;cursor:pointer}.primary{border:1px solid #405891;background:#26375F;color:#EEF2FF}.secondary{border:1px solid var(--border);background:var(--card);color:var(--text)}.danger{border:1px solid rgba(240,106,106,.45);background:rgba(240,106,106,.08);color:#FFB5B5}.notice{border-left:3px solid var(--warn);background:#251F12;color:#EAC77A;padding:11px 12px;border-radius:8px}.notice.ok{border-color:var(--ok);background:rgba(0,194,168,.08);color:#B6F0E6}.notice.blocked{border-color:var(--bad);background:rgba(240,106,106,.08);color:#FFB5B5}.metrics{display:grid;gap:9px;margin-top:13px}.metric,.saved,.step{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px}.metric span,.saved span{display:block;color:var(--muted);font-size:11px}.saved{display:grid;gap:4px;margin-top:8px}.steps{display:grid;gap:10px;margin-top:13px}.step-head{display:flex;justify-content:space-between;gap:10px}.step code{display:block;color:#C7D3E0;margin-top:7px;overflow-wrap:anywhere}.footer{margin-top:18px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px}@media(max-width:900px){.shell{display:block}aside{border-right:0;border-bottom:1px solid var(--border)}.grid,.fields{grid-template-columns:1fr}}
+    .grid{margin-top:18px;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.7fr);gap:18px;align-items:start}.stack{display:grid;gap:18px}.card{padding:18px}.card-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding-bottom:13px;border-bottom:1px solid var(--border)}form{display:grid;gap:13px;margin-top:15px}fieldset{border:1px solid var(--border);border-radius:12px;padding:13px;display:grid;gap:11px}legend{color:#C8D4FF;font-weight:800;padding:0 7px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}label{display:grid;gap:6px;color:var(--muted);font-size:12px}label.full{grid-column:1/-1}input,select,textarea{width:100%;border:1px solid var(--border);border-radius:9px;background:#0F141A;color:var(--text);padding:9px 10px;font:inherit}textarea{min-height:84px;resize:vertical}.check{display:flex;align-items:center;gap:8px}.check input{width:auto}.actions{display:flex;flex-wrap:wrap;gap:9px}button{min-height:39px;border-radius:9px;padding:0 13px;font:inherit;font-weight:800;cursor:pointer}.primary{border:1px solid #405891;background:#26375F;color:#EEF2FF}.secondary{border:1px solid var(--border);background:var(--card);color:var(--text)}.danger{border:1px solid rgba(240,106,106,.45);background:rgba(240,106,106,.08);color:#FFB5B5}.notice{border-left:3px solid var(--warn);background:#251F12;color:#EAC77A;padding:11px 12px;border-radius:8px}.notice.ok{border-color:var(--ok);background:rgba(0,194,168,.08);color:#B6F0E6}.notice.blocked{border-color:var(--bad);background:rgba(240,106,106,.08);color:#FFB5B5}.metrics{display:grid;gap:9px;margin-top:13px}.metric,.saved,.step{border:1px solid var(--border);border-radius:10px;background:var(--card);padding:10px}.metric span,.saved span{display:block;color:var(--muted);font-size:11px}.saved{display:grid;gap:4px;margin-top:8px}.steps{display:grid;gap:10px;margin-top:13px}.step-head{display:flex;justify-content:space-between;gap:10px}.step code{display:block;color:#C7D3E0;margin-top:7px;overflow-wrap:anywhere}.step-copy{color:var(--muted);margin-top:7px}.footer{margin-top:18px;display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px}@media(max-width:900px){.shell{display:block}aside{border-right:0;border-bottom:1px solid var(--border)}.grid,.fields{grid-template-columns:1fr}}
   </style>
 </head>
 <body data-nodal-os="teach-nodal-product-surface" data-state="@@STATE@@" data-bound="@@BOUND@@" data-video-stored="false" data-audio-stored="false" data-raw-input-stored="false" data-global-hooks="false" data-replay-enabled="false" data-execution-authority="false" data-product-authority="false">
@@ -123,7 +125,7 @@ public static class NodalOsTeachNodalProductHtmlRenderer
       <label>Label visible exacto<input name="targetLabel" maxlength="240" required placeholder="Ej: Guardar"></label>
       <label>Variable para Type<input name="parameterName" maxlength="40" placeholder="VALUE"></label>
       <label class="full">Referencia del valor<input name="parameterReference" maxlength="180" placeholder="variable-ref:VALUE"></label>
-      <label class="check full"><input type="checkbox" name="secretByReference"> El valor es sensible y usa secret-ref:/secret://</label>
+      <label class="check full"><input type="checkbox" name="secretByReference"> El valor es sensible y usa una referencia opaca secret-ref:</label>
     </div>
     <div class="actions"><button class="primary" type="submit">Capturar este paso</button></div>
   </form>
@@ -138,34 +140,49 @@ public static class NodalOsTeachNodalProductHtmlRenderer
         string token,
         NodalOsTeachNodalProductState state)
     {
-        var steps = string.Join(string.Empty, proposal.Steps.Select(step => $"""
+        var reviewReady = state == NodalOsTeachNodalProductState.ReviewReady;
+        var steps = string.Join(string.Empty, proposal.Steps.Select(step => reviewReady
+            ? $"""
 <article class="step">
   <div class="step-head"><strong>{H(step.StepId)} · {H(step.Kind)}</strong><span class="badge {(step.Verified ? "ready" : "attention")}">{(step.Verified ? "verified" : "review")}</span></div>
   <label>Intención<textarea name="stepIntent_{H(step.StepId)}" maxlength="300">{H(step.Intent)}</textarea></label>
   <label>Target visible<input name="stepTarget_{H(step.StepId)}" maxlength="240" value="{H(step.TargetLabel)}"></label>
   <code>{H(step.TargetRole)} · {H(Short(step.BeforeFingerprint))} → {H(Short(step.AfterFingerprint))}</code>
 </article>
+"""
+            : $"""
+<article class="step">
+  <div class="step-head"><strong>{H(step.StepId)} · {H(step.Kind)}</strong><span class="badge attention">review-only</span></div>
+  <div class="step-copy"><strong>Intención:</strong> {H(step.Intent)}</div>
+  <div class="step-copy"><strong>Target:</strong> {H(step.TargetLabel)} · {H(step.TargetRole)}</div>
+  <code>{H(Short(step.BeforeFingerprint))} → {H(Short(step.AfterFingerprint))}</code>
+</article>
 """));
-        var save = proposal.SaveAllowed
+        var save = reviewReady && proposal.SaveAllowed
             ? $"""<form method="post" action="{NodalOsTeachNodalProductEndpointMapper.SaveRoute}"><input type="hidden" name="{NodalOsTeachNodalProductEndpointMapper.TokenField}" value="{H(token)}"><button class="primary" type="submit">{(proposal.Kind == NodalOsTeachNodalProposalKind.UpdateCandidate ? "Guardar nueva versión del draft" : "Guardar draft local")}</button></form>"""
             : string.Empty;
         var savedNotice = state == NodalOsTeachNodalProductState.Saved
-            ? "<div class=\"notice ok\">Draft guardado localmente. Continúa review-only y no puede ejecutarse.</div>"
+            ? "<div class=\"notice ok\">Draft guardado localmente. Continúa review-only y no puede ejecutarse. Para enseñar otro workflow, descartá esta vista y empezá una sesión nueva.</div>"
             : string.Empty;
+        var reviewForm = reviewReady
+            ? $"""
+<form method="post" action="{NodalOsTeachNodalProductEndpointMapper.ReviewRoute}">
+  <input type="hidden" name="{NodalOsTeachNodalProductEndpointMapper.TokenField}" value="{H(token)}">
+  <div class="fields">
+    <label class="full">Título<input name="proposalTitle" maxlength="180" value="{H(proposal.Title)}" required></label>
+    <label class="full">Resumen<textarea name="proposalSummary" maxlength="500" required>{H(proposal.Summary)}</textarea></label>
+  </div>
+  <div class="steps">{steps}</div>
+  <div class="actions"><button class="secondary" type="submit">Aplicar correcciones al draft</button></div>
+</form>
+"""
+            : $"""<div class="metrics"><div class="metric"><span>Título</span><strong>{H(proposal.Title)}</strong></div><div class="metric"><span>Resumen</span><strong>{H(proposal.Summary)}</strong></div></div><div class="steps">{steps}</div>""";
         return $"""
 <section class="card">
   <div class="card-head"><h2>3. Revisar propuesta</h2><span class="badge {(proposal.SaveAllowed ? "ready" : "blocked")}">{H(proposal.Kind.ToString())}</span></div>
   {savedNotice}
-  <div class="notice">La propuesta es editable. Guardarla no habilita replay, scripts ni ejecución. Las correcciones quedan en el draft y requieren verificación futura.</div>
-  <form method="post" action="{NodalOsTeachNodalProductEndpointMapper.ReviewRoute}">
-    <input type="hidden" name="{NodalOsTeachNodalProductEndpointMapper.TokenField}" value="{H(token)}">
-    <div class="fields">
-      <label class="full">Título<input name="proposalTitle" maxlength="180" value="{H(proposal.Title)}" required></label>
-      <label class="full">Resumen<textarea name="proposalSummary" maxlength="500" required>{H(proposal.Summary)}</textarea></label>
-    </div>
-    <div class="steps">{steps}</div>
-    <div class="actions"><button class="secondary" type="submit">Aplicar correcciones al draft</button></div>
-  </form>
+  <div class="notice">La propuesta es editable antes de guardar. Guardarla no habilita replay, scripts ni ejecución. Toda corrección invalida la metadata de verificación previa y requiere re-verificación futura.</div>
+  {reviewForm}
   <div class="actions">{save}<form method="post" action="{NodalOsTeachNodalProductEndpointMapper.DiscardRoute}"><input type="hidden" name="{NodalOsTeachNodalProductEndpointMapper.TokenField}" value="{H(token)}"><button class="danger" type="submit">Descartar y empezar de nuevo</button></form></div>
 </section>
 <section class="card"><div class="card-head"><h2>Contrato de salida</h2><span class="badge">review-only</span></div><div class="metrics">
@@ -176,6 +193,17 @@ public static class NodalOsTeachNodalProductHtmlRenderer
 </div></section>
 """;
     }
+
+    private static string RenderFailedClosed(string token) => $"""
+<section class="card">
+  <div class="card-head"><h2>Sesión detenida</h2><span class="badge blocked">failed closed</span></div>
+  <div class="notice blocked">La aplicación y la propuesta activas fueron liberadas. No se puede continuar, guardar ni capturar hasta descartar esta sesión.</div>
+  <form method="post" action="{NodalOsTeachNodalProductEndpointMapper.DiscardRoute}">
+    <input type="hidden" name="{NodalOsTeachNodalProductEndpointMapper.TokenField}" value="{H(token)}">
+    <div class="actions"><button class="danger" type="submit">Descartar y volver al inicio</button></div>
+  </form>
+</section>
+""";
 
     private static string H(string? value) => WebUtility.HtmlEncode(value ?? string.Empty);
     private static string Bool(bool value) => value ? "true" : "false";
